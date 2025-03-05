@@ -157,35 +157,35 @@ The default classification accuracy is around 0.3 which is better than the rando
 
 class Classifier(nn.Module):
     def __init__(self, num_classes=7):
+        """ CNN model for facial expressio classification using three convolutional layers"""
         super(Classifier, self).__init__()
-        
-        # You may have some your own layers here
+        self.conv_layers = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),  # Extracts low-level features (edges, textures)
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),  # Reduces spatial size by half (128x128 -> 64x64)
 
-        # self.layer_1 = ...
-        # self.layer_2 = ...
-        # self.layer_more = ...
-        # ...
-        # Feel free to experiment with different layer combinations.
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),  # Extracts higher-level features
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
 
-        self.layer_flatten = nn.Flatten()
-        # For Linear output only, can use CrossEntropyLoss() for the loss (automatically apply Softmax)
-        self.fc_layer_for_output = nn.Linear(128 * 128, num_classes)
-        # If you are using Linear + Sigmoid as the output layer, then BCELoss() can be used to get the loss
-        # To know more about criterion, please check PyTorch official site
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),  # Deepest feature extraction
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2)  # Final spatial reduction
+        )
+        # After three pooling layers on 128x128 images:
+        # 128x128 -> 64x64 -> 32x32 -> 16x16
+        self.fc_layers = nn.Sequential(
+            nn.Linear(128 * 16 * 16, 512),  # Connects features for classification
+            nn.ReLU(),
+            nn.Dropout(0.5),  # Prevent overfitting by randomly dropping out 50% of the inputs
+            nn.Linear(512, num_classes),  # Output layer with 7 classes/emotions
+        )
 
-    # forward() defines how the input data flows through the layers of the model during the forward pass
     def forward(self, x):
-
-        # If you have your own layers added
-        # Don't forget to
-        # out_1 = self.layer_1(x)
-        # out_2 = self.layer_2(out_1)
-        # x = self.layer_more(out_2)
-        # ...
-
-        flattened = self.layer_flatten(x)
-        output = self.fc_layer_for_output(flattened)
-        return output
+        x = self.conv_layers(x)  # Feature extraction
+        x = x.view(x.size(0), -1)  # Flatten the tensor for fully connected layers
+        x = self.fc_layers(x)  # Classification
+        return x
 
 ################################################################################
 # Configurations (*)
