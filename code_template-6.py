@@ -31,6 +31,9 @@ from tqdm.auto import tqdm
 # evaluation & visualization part
 import sklearn
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import accuracy_score
 import seaborn as sns
 
 ################################################################################
@@ -467,6 +470,7 @@ with torch.no_grad():
 # The plot should show how training accuracy and validation accuracy change over time during training. 
 # Graph number of training epochs (x-axis) versus training set and validation set accuracy (y-axis). 
 # Hence, your plot should contain two curves.
+
     plt.plot(epoch_list,train_delta_acc)
     plt.plot(epoch_list,valid_delta_acc)
     for i, (xi, yi) in enumerate(zip(epoch_list, train_delta_acc)):
@@ -484,32 +488,34 @@ with torch.no_grad():
 # Use your confusion matrix to additionally report precision and recall for each of the 7 classes, as well as the overall accuracy of your model.
 
     cm = confusion_matrix(true_labels, predictions)
+
     disp = ConfusionMatrixDisplay(cm)
     disp.plot()
     disp.title = 'Confusion Matrix for Image Classification'
     plt.show()
 
+    precision = precision_score(true_labels, predictions, average='micro') # doesn't work
+    recall = recall_score(true_labels, predictions, average='micro')
+    accuracy = accuracy_score(true_labels, predictions)
+    print(precision, recall, accuracy)
+
 ## Misclassified Image Visualization
 # Include 3 visualizations of images that were misclassified by your best-performing model. 
 # You will have to create or use a program that get the misclassified images and translate it into a grayscale image and show.
 
-    # Identify misclassified images
     misclassified = []
 
     for i, (true, pred) in enumerate(zip(true_labels, predictions)):
         if true != pred:
             misclassified.append((i, true, pred))
 
-    # Select a few misclassified images to visualize
-    num_images_to_show = min(3, len(misclassified))  # Show up to 3 images
+    num_images_to_show = min(3, len(misclassified))
     fig, axes = plt.subplots(1, num_images_to_show, figsize=(15, 5))
 
     for i, (index, true_label, pred_label) in enumerate(misclassified[:num_images_to_show]):
-        # Load the misclassified image
         img_path, _ = test_dataset.samples[index]
-        image = Image.open(img_path).convert("L")  # Convert to grayscale
+        image = Image.open(img_path).convert("L")
 
-        # Display the image
         axes[i].imshow(image, cmap="gray")
         axes[i].axis("off")
         axes[i].set_title(f"True: {desired_class_order[true_label]}\nPred: {desired_class_order[pred_label]}")
