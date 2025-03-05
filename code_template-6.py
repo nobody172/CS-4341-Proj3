@@ -474,9 +474,9 @@ with torch.no_grad():
     plt.plot(epoch_list,train_delta_acc)
     plt.plot(epoch_list,valid_delta_acc)
     for i, (xi, yi) in enumerate(zip(epoch_list, train_delta_acc)):
-        plt.annotate(f'({xi}, {yi})', (xi, yi), textcoords="offset points", xytext=(0, 10), ha='center')
+        plt.annotate(f'({xi}, {yi:.2f})', (xi, yi), textcoords="offset points", xytext=(0, 10), ha='center')
     for i, (xi, yi) in enumerate(zip(epoch_list, valid_delta_acc)):
-        plt.annotate(f'({xi}, {yi})', (xi, yi), textcoords="offset points", xytext=(0, 10), ha='center')
+        plt.annotate(f'({xi}, {yi:.2f})', (xi, yi), textcoords="offset points", xytext=(0, 10), ha='center')
     plt.grid(True)
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
